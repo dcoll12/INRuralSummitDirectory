@@ -167,6 +167,8 @@
             transition: all 0.3s;
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .contact-card:hover {
@@ -187,6 +189,38 @@
 
         .contact-header {
             margin-bottom: 15px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .contact-photo {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2px solid #e2e8f0;
+        }
+
+        .contact-photo-placeholder {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+            border: 2px solid #e2e8f0;
+        }
+
+        .contact-header-text {
+            flex: 1;
+            min-width: 0;
         }
 
         .contact-name {
@@ -213,6 +247,7 @@
             margin-top: 15px;
             padding-top: 15px;
             border-top: 1px solid #e2e8f0;
+            flex: 1;
         }
 
         .info-row {
@@ -249,7 +284,8 @@
         .social-links {
             display: flex;
             gap: 10px;
-            margin-top: 15px;
+            flex-wrap: wrap;
+            margin-top: auto;
             padding-top: 15px;
             border-top: 1px solid #e2e8f0;
         }
@@ -938,13 +974,24 @@
             if (contact['Senate District']) districtInfo.push(contact['Senate District']);
             if (contact['Congressional District']) districtInfo.push(contact['Congressional District']);
 
+            // Build photo/avatar HTML
+            const photoUrl = contact['Photo URL'] || contact['Photo'] || '';
+            const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+            const photoHtml = photoUrl
+                ? `<img class="contact-photo" src="${photoUrl}" alt="${firstName} ${lastName}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                   <div class="contact-photo-placeholder" style="display:none;">${initials}</div>`
+                : `<div class="contact-photo-placeholder">${initials}</div>`;
+
             return `
                 <div class="contact-card">
                     <div class="contact-header">
-                        <div class="contact-name">${firstName} ${lastName}</div>
-                        ${contact.Role ? `<div class="contact-role">${contact.Role}</div>` : ''}
-                        ${contact.Title ? `<div class="contact-title">${contact.Title}</div>` : ''}
-                        ${runningForDistrict && (contact.Role || '').toLowerCase().includes('candidate') && !(contact.Role || '').toLowerCase().includes('former candidate') ? `<span class="badge">Running for: ${runningForDistrict}</span>` : ''}
+                        ${photoHtml}
+                        <div class="contact-header-text">
+                            <div class="contact-name">${firstName} ${lastName}</div>
+                            ${contact.Role ? `<div class="contact-role">${contact.Role}</div>` : ''}
+                            ${contact.Title ? `<div class="contact-title">${contact.Title}</div>` : ''}
+                            ${runningForDistrict && (contact.Role || '').toLowerCase().includes('candidate') && !(contact.Role || '').toLowerCase().includes('former candidate') ? `<span class="badge">Running for: ${runningForDistrict}</span>` : ''}
+                        </div>
                     </div>
                     
                     <div class="contact-info">

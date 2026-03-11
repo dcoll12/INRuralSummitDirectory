@@ -36,6 +36,8 @@ st.markdown("""
         background: rgba(255,255,255,0.18); color: white;
         border: 2px solid white;
     }
+
+    /* Grid card — fixed height so all boxes are the same size */
     .contact-card {
         background: white;
         border: 2px solid #e2e8f0;
@@ -44,7 +46,12 @@ st.markdown("""
         margin-bottom: 20px;
         border-top: 4px solid #667eea;
         box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        height: 360px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
     }
+    .card-header-section { flex-shrink: 0; }
     .contact-name { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin-bottom: 3px; }
     .contact-role { color: #3b82f6; font-weight: 600; font-size: 0.95rem; margin-bottom: 2px; }
     .contact-title { color: #64748b; font-size: 0.88rem; }
@@ -54,22 +61,80 @@ st.markdown("""
         border-radius: 12px; padding: 3px 10px;
         font-size: 0.78rem; font-weight: 600; margin-top: 6px;
     }
-    .info-section { margin-top: 14px; padding-top: 14px; border-top: 1px solid #e2e8f0; }
+    .info-section {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid #e2e8f0;
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+    }
     .info-row { margin-bottom: 7px; font-size: 0.88rem; }
     .info-label { font-weight: 600; color: #475569; margin-right: 4px; }
     .info-value { color: #64748b; }
     .info-value a { color: #3b82f6; text-decoration: none; }
-    .social-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+    .social-section {
+        flex-shrink: 0;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid #e2e8f0;
+    }
     .social-btn {
         display: inline-block;
         background: #eff6ff; color: #1e40af;
-        border-radius: 6px; padding: 6px 12px;
+        border-radius: 6px; padding: 5px 10px;
         font-size: 0.82rem; font-weight: 600;
-        text-decoration: none; margin-right: 6px; margin-bottom: 4px;
+        text-decoration: none; margin-right: 5px; margin-bottom: 4px;
     }
+
+    /* List view styles */
+    .list-container {
+        width: 100%;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 4px;
+    }
+    .list-header {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1.5fr 1fr 160px;
+        gap: 16px;
+        padding: 12px 20px;
+        background: #f1f5f9;
+        font-weight: 700;
+        color: #475569;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+    .list-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1.5fr 1fr 160px;
+        gap: 16px;
+        padding: 14px 20px;
+        border-top: 1px solid #e2e8f0;
+        align-items: center;
+        min-height: 68px;
+        background: white;
+        transition: background 0.15s;
+    }
+    .list-row:hover { background: #f8faff; }
+    .list-name { font-size: 1rem; font-weight: 700; color: #1e293b; }
+    .list-role { color: #3b82f6; font-weight: 600; font-size: 0.85rem; margin-top: 2px; }
+    .list-cell { color: #64748b; font-size: 0.88rem; }
+    .list-actions { display: flex; gap: 5px; flex-wrap: wrap; }
+    .list-action-btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 32px; height: 32px;
+        background: #eff6ff;
+        border-radius: 6px; font-size: 0.95rem;
+        text-decoration: none;
+    }
+    .list-action-btn:hover { background: #3b82f6; }
+
     .stats-bar {
         background: #eff6ff; border-bottom: 1px solid #dbeafe;
-        padding: 10px 0; margin-bottom: 20px;
+        padding: 10px 0; margin-bottom: 8px;
         font-size: 1rem; color: #1e40af; font-weight: 600;
     }
     div[data-testid="stTextInput"] input { font-size: 1rem; }
@@ -84,7 +149,6 @@ def load_data():
         response.raise_for_status()
         df = pd.read_csv(StringIO(response.text), dtype=str)
         df = df.fillna('')
-        # Clean up phone numbers stored as floats
         if 'Phone' in df.columns:
             df['Phone'] = df['Phone'].str.replace(r'\.0$', '', regex=True)
         return df
@@ -129,6 +193,7 @@ def build_card(contact):
     is_former = 'former' in role.lower()
 
     html = '<div class="contact-card">'
+    html += '<div class="card-header-section">'
     html += f'<div class="contact-name">{name}</div>'
     if role:
         html += f'<div class="contact-role">{role}</div>'
@@ -136,6 +201,7 @@ def build_card(contact):
         html += f'<div class="contact-title">{title}</div>'
     if running_for and is_candidate and not is_former:
         html += f'<span class="badge">Running for: {running_for}</span>'
+    html += '</div>'
 
     html += '<div class="info-section">'
 
@@ -178,7 +244,6 @@ def build_card(contact):
 
     html += '</div>'  # end info-section
 
-    # Social links
     website = contact.get('Website', '').strip()
     facebook = contact.get('Facebook', '').strip()
     instagram = contact.get('Instagram', '').strip()
@@ -206,6 +271,70 @@ def build_card(contact):
 
     html += '</div>'
     return html
+
+
+def build_list_html(df):
+    rows = []
+    for _, contact in df.iterrows():
+        c = contact.to_dict()
+        first = c.get('First Name', '').strip()
+        last = c.get('Last Name', '').strip()
+        name = f"{first} {last}".strip()
+        role = c.get('Role', '').strip()
+
+        city = c.get('Home City', '').strip()
+        county = c.get('Home County', '').strip()
+        location = city + (f', {county}' if county else '') if city else '—'
+
+        occupation = c.get('Occupation', '').strip() or '—'
+
+        districts = []
+        for field in ['District', 'Congressional District', 'House District', 'Senate District']:
+            val = c.get(field, '').strip()
+            if val:
+                districts.append(val)
+        district_text = ', '.join(districts) or '—'
+
+        email = c.get('Email', '').strip()
+        phone_raw = c.get('Phone', '').strip()
+        website = c.get('Website', '').strip()
+        facebook = c.get('Facebook', '').strip()
+        instagram = c.get('Instagram', '').strip()
+
+        actions = ''
+        if email:
+            actions += f'<a href="mailto:{email}" class="list-action-btn" title="Email">📧</a>'
+        if phone_raw:
+            actions += f'<a href="tel:{phone_raw}" class="list-action-btn" title="Call">📞</a>'
+        if website and website.startswith('http'):
+            actions += f'<a href="{website}" target="_blank" class="list-action-btn" title="Website">🌐</a>'
+        if facebook and facebook.startswith('http'):
+            actions += f'<a href="{facebook}" target="_blank" class="list-action-btn" title="Facebook">📘</a>'
+        if instagram and instagram != '?':
+            ig = instagram.lstrip('@')
+            actions += f'<a href="https://instagram.com/{ig}" target="_blank" class="list-action-btn" title="Instagram">📸</a>'
+
+        role_html = f'<div class="list-role">{role}</div>' if role else ''
+        rows.append(f'''
+        <div class="list-row">
+            <div><div class="list-name">{name}</div>{role_html}</div>
+            <div class="list-cell">{location}</div>
+            <div class="list-cell">{district_text}</div>
+            <div class="list-cell">{occupation}</div>
+            <div class="list-actions">{actions}</div>
+        </div>''')
+
+    return f'''
+    <div class="list-container">
+        <div class="list-header">
+            <div>Name &amp; Role</div>
+            <div>Location</div>
+            <div>District</div>
+            <div>Occupation</div>
+            <div>Contact</div>
+        </div>
+        {''.join(rows)}
+    </div>'''
 
 
 # ── Header ──────────────────────────────────────────────────────────────────
@@ -308,17 +437,24 @@ if county_sel != "All Counties":
         )
     ]
 
-# ── Stats bar ────────────────────────────────────────────────────────────────
-st.markdown(
-    f'<div class="stats-bar">Total Contacts: <b>{len(df)}</b> &nbsp;|&nbsp; Showing: <b>{len(filtered)}</b></div>',
-    unsafe_allow_html=True
-)
+# ── Stats bar + view toggle ───────────────────────────────────────────────────
+stats_col, view_col = st.columns([5, 1])
+with stats_col:
+    st.markdown(
+        f'<div class="stats-bar">Total Contacts: <b>{len(df)}</b> &nbsp;|&nbsp; Showing: <b>{len(filtered)}</b></div>',
+        unsafe_allow_html=True
+    )
+with view_col:
+    view_mode = st.radio("View", ["📊 Grid", "📋 List"], horizontal=True,
+                         key="view_mode", label_visibility="collapsed")
 
-# ── Render cards in 3-column grid ────────────────────────────────────────────
+# ── Render ────────────────────────────────────────────────────────────────────
 if filtered.empty:
     st.markdown("### No contacts found\nTry adjusting your search or filters.")
-else:
+elif view_mode == "📊 Grid":
     cols = st.columns(3)
     for i, (_, row) in enumerate(filtered.iterrows()):
         with cols[i % 3]:
             st.markdown(build_card(row.to_dict()), unsafe_allow_html=True)
+else:
+    st.markdown(build_list_html(filtered), unsafe_allow_html=True)

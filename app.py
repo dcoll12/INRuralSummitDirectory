@@ -315,26 +315,27 @@ def build_list_html(df):
             actions += f'<a href="https://instagram.com/{ig}" target="_blank" class="list-action-btn" title="Instagram">📸</a>'
 
         role_html = f'<div class="list-role">{role}</div>' if role else ''
-        rows.append(f'''
-        <div class="list-row">
-            <div><div class="list-name">{name}</div>{role_html}</div>
-            <div class="list-cell">{location}</div>
-            <div class="list-cell">{district_text}</div>
-            <div class="list-cell">{occupation}</div>
-            <div class="list-actions">{actions}</div>
-        </div>''')
+        rows.append(
+            f'<div class="list-row">'
+            f'<div><div class="list-name">{name}</div>{role_html}</div>'
+            f'<div class="list-cell">{location}</div>'
+            f'<div class="list-cell">{district_text}</div>'
+            f'<div class="list-cell">{occupation}</div>'
+            f'<div class="list-actions">{actions}</div>'
+            f'</div>'
+        )
 
-    return f'''
-    <div class="list-container">
-        <div class="list-header">
-            <div>Name &amp; Role</div>
-            <div>Location</div>
-            <div>District</div>
-            <div>Occupation</div>
-            <div>Contact</div>
-        </div>
-        {''.join(rows)}
-    </div>'''
+    header = (
+        '<div class="list-container">'
+        '<div class="list-header">'
+        '<div>Name &amp; Role</div>'
+        '<div>Location</div>'
+        '<div>District</div>'
+        '<div>Occupation</div>'
+        '<div>Contact</div>'
+        '</div>'
+    )
+    return header + ''.join(rows) + '</div>'
 
 
 # ── Header ──────────────────────────────────────────────────────────────────

@@ -163,12 +163,13 @@
             background: white;
             border: 2px solid #e2e8f0;
             border-radius: 12px;
-            padding: 25px;
+            padding: 0;
             transition: all 0.3s;
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            min-height: 460px;
         }
 
         .contact-card:hover {
@@ -188,43 +189,52 @@
         }
 
         .contact-header {
-            margin-bottom: 15px;
+            margin-bottom: 0;
+            padding: 16px 20px 12px;
+            text-align: center;
+        }
+
+        .contact-photo-area {
+            background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
             display: flex;
-            gap: 14px;
-            align-items: flex-start;
+            justify-content: center;
+            align-items: center;
+            padding: 24px 0 16px;
+            border-bottom: 1px solid #e2e8f0;
         }
 
         .contact-photo {
-            width: 64px;
-            height: 64px;
+            width: 96px;
+            height: 96px;
             border-radius: 50%;
             object-fit: cover;
-            flex-shrink: 0;
-            border: 2px solid #e2e8f0;
+            border: 3px solid white;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
         }
 
         .contact-photo-placeholder {
-            width: 64px;
-            height: 64px;
+            width: 96px;
+            height: 96px;
             border-radius: 50%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3rem;
+            font-size: 2rem;
             font-weight: 700;
             color: white;
-            flex-shrink: 0;
-            border: 2px solid #e2e8f0;
+            border: 3px solid white;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
         }
 
         .contact-header-text {
             flex: 1;
             min-width: 0;
+            text-align: center;
         }
 
         .contact-name {
-            font-size: 1.4rem;
+            font-size: 1.15rem;
             font-weight: 700;
             color: #1e293b;
             margin-bottom: 5px;
@@ -244,8 +254,8 @@
         }
 
         .contact-info {
-            margin-top: 15px;
-            padding-top: 15px;
+            margin-top: 0;
+            padding: 0 20px 10px;
             border-top: 1px solid #e2e8f0;
             flex: 1;
         }
@@ -253,8 +263,12 @@
         .info-row {
             display: flex;
             align-items: flex-start;
-            margin-bottom: 10px;
+            margin-bottom: 9px;
             font-size: 0.9rem;
+        }
+
+        .info-row:first-child {
+            margin-top: 12px;
         }
 
         .info-label {
@@ -286,7 +300,7 @@
             gap: 10px;
             flex-wrap: wrap;
             margin-top: auto;
-            padding-top: 15px;
+            padding: 12px 20px 18px;
             border-top: 1px solid #e2e8f0;
         }
 
@@ -984,8 +998,10 @@
 
             return `
                 <div class="contact-card">
-                    <div class="contact-header">
+                    <div class="contact-photo-area">
                         ${photoHtml}
+                    </div>
+                    <div class="contact-header">
                         <div class="contact-header-text">
                             <div class="contact-name">${firstName} ${lastName}</div>
                             ${contact.Role ? `<div class="contact-role">${contact.Role}</div>` : ''}

@@ -42,16 +42,40 @@ st.markdown("""
         background: white;
         border: 2px solid #e2e8f0;
         border-radius: 12px;
-        padding: 22px;
+        padding: 0;
         margin-bottom: 20px;
         border-top: 4px solid #667eea;
         box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        height: 360px;
+        height: 430px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
     }
-    .card-header-section { flex-shrink: 0; }
+    .photo-area {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 18px 0 12px;
+        background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+        border-bottom: 1px solid #e2e8f0;
+        flex-shrink: 0;
+    }
+    .contact-photo {
+        width: 72px; height: 72px;
+        border-radius: 50%; object-fit: cover;
+        border: 3px solid white;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
+    .photo-placeholder {
+        width: 72px; height: 72px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; font-weight: 700; color: white;
+        border: 3px solid white;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
+    .card-header-section { flex-shrink: 0; padding: 12px 18px 8px; }
     .contact-name { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin-bottom: 3px; }
     .contact-role { color: #3b82f6; font-weight: 600; font-size: 0.95rem; margin-bottom: 2px; }
     .contact-title { color: #64748b; font-size: 0.88rem; }
@@ -62,8 +86,7 @@ st.markdown("""
         font-size: 0.78rem; font-weight: 600; margin-top: 6px;
     }
     .info-section {
-        margin-top: 14px;
-        padding-top: 14px;
+        padding: 10px 18px 0;
         border-top: 1px solid #e2e8f0;
         flex: 1;
         overflow-y: auto;
@@ -75,8 +98,7 @@ st.markdown("""
     .info-value a { color: #3b82f6; text-decoration: none; }
     .social-section {
         flex-shrink: 0;
-        margin-top: 12px;
-        padding-top: 10px;
+        padding: 10px 18px 14px;
         border-top: 1px solid #e2e8f0;
     }
     .social-btn {
@@ -192,7 +214,20 @@ def build_card(contact):
     is_candidate = 'candidate' in role.lower()
     is_former = 'former' in role.lower()
 
+    # Photo / avatar
+    photo_url = contact.get('Photo URL', '').strip() or contact.get('Photo', '').strip()
+    initials = ((first[0] if first else '') + (last[0] if last else '')).upper() or '?'
+    if photo_url:
+        photo_html = (
+            f'<img class="contact-photo" src="{photo_url}" alt="{name}" '
+            f'onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'
+            f'<div class="photo-placeholder" style="display:none">{initials}</div>'
+        )
+    else:
+        photo_html = f'<div class="photo-placeholder">{initials}</div>'
+
     html = '<div class="contact-card">'
+    html += f'<div class="photo-area">{photo_html}</div>'
     html += '<div class="card-header-section">'
     html += f'<div class="contact-name">{name}</div>'
     if role:

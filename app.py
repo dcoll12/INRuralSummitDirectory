@@ -66,17 +66,12 @@ st.markdown("""
         flex-direction: column;
         height: 100%;
     }
-    /* Equal-height cards per row: stretch every wrapper inside each column */
-    div[data-testid="stHorizontalBlock"] {
-        align-items: stretch !important;
-    }
-    div[data-testid="stHorizontalBlock"] div[data-testid="column"],
-    div[data-testid="stHorizontalBlock"] div[data-testid="column"] > div,
-    div[data-testid="stHorizontalBlock"] div[data-testid="stVerticalBlock"],
-    div[data-testid="stHorizontalBlock"] div[data-testid="stMarkdownContainer"] {
-        display: flex !important;
-        flex-direction: column !important;
-        flex: 1 !important;
+    /* CSS Grid container — cards in the same row share the tallest card's height */
+    .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        align-items: stretch;
     }
     .photo-area {
         display: flex;
@@ -563,13 +558,10 @@ with view_col:
 if filtered.empty:
     st.markdown("### No contacts found\nTry adjusting your search or filters.")
 elif view_mode == "📊 Grid":
-    rows_data = list(filtered.iterrows())
-    for row_start in range(0, len(rows_data), 3):
-        chunk = rows_data[row_start:row_start + 3]
-        cols = st.columns(3)
-        for col, (_, row) in zip(cols, chunk):
-            with col:
-                st.markdown(build_card(row.to_dict()), unsafe_allow_html=True)
+    cards_html = '<div class="contact-grid">' + \
+        "".join(build_card(row.to_dict()) for _, row in filtered.iterrows()) + \
+        '</div>'
+    st.markdown(cards_html, unsafe_allow_html=True)
 else:
     # Apply list-specific sort (driven by clicking column headers)
     lsc = st.session_state.list_sort_col

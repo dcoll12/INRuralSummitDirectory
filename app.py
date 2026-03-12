@@ -129,21 +129,53 @@ st.markdown("""
     .list-container {
         width: 100%;
         border: 2px solid #e2e8f0;
-        border-radius: 8px;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
         overflow: hidden;
-        margin-top: 4px;
+        margin-top: 0;
     }
-    .list-header {
-        display: grid;
-        grid-template-columns: 2fr 1fr 1.5fr 1fr 160px;
-        gap: 16px;
-        padding: 12px 20px;
+    /* Sortable header row rendered via Streamlit columns */
+    .list-sort-header {
+        display: block;
+        border: 2px solid #e2e8f0;
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        overflow: hidden;
         background: #f1f5f9;
-        font-weight: 700;
-        color: #475569;
-        font-size: 0.78rem;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
+    }
+    /* Target buttons inside the horizontal block that follows .list-sort-header marker */
+    div[data-testid="stMarkdownContainer"]:has(.list-sort-header) + div[data-testid="stHorizontalBlock"] button[kind="secondary"],
+    div[data-testid="stMarkdownContainer"]:has(.list-sort-header) + div[data-testid="stHorizontalBlock"] button {
+        background: #f1f5f9 !important;
+        color: #475569 !important;
+        font-weight: 700 !important;
+        font-size: 0.78rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.8px !important;
+        border: none !important;
+        border-right: 1px solid #e2e8f0 !important;
+        border-radius: 0 !important;
+        padding: 10px 8px !important;
+        text-align: left !important;
+        width: 100% !important;
+        cursor: pointer !important;
+        transition: background 0.15s, color 0.15s !important;
+    }
+    div[data-testid="stMarkdownContainer"]:has(.list-sort-header) + div[data-testid="stHorizontalBlock"] button:hover {
+        background: #e2e8f0 !important;
+        color: #1e40af !important;
+    }
+    div[data-testid="stMarkdownContainer"]:has(.list-sort-header) + div[data-testid="stHorizontalBlock"] [data-testid="column"]:last-child button {
+        border-right: none !important;
+        cursor: default !important;
+    }
+    /* Remove extra padding Streamlit adds around column buttons */
+    div[data-testid="stMarkdownContainer"]:has(.list-sort-header) + div[data-testid="stHorizontalBlock"] [data-testid="column"] {
+        padding: 0 !important;
+    }
+    div[data-testid="stMarkdownContainer"]:has(.list-sort-header) + div[data-testid="stHorizontalBlock"] {
+        gap: 0 !important;
+        padding: 0 !important;
     }
     .list-row {
         display: grid;
@@ -383,17 +415,7 @@ def build_list_html(df):
             f'</div>'
         )
 
-    header = (
-        '<div class="list-container">'
-        '<div class="list-header">'
-        '<div>Name &amp; Role</div>'
-        '<div>Location</div>'
-        '<div>District</div>'
-        '<div>Occupation</div>'
-        '<div>Contact</div>'
-        '</div>'
-    )
-    return header + ''.join(rows) + '</div>'
+    return '<div class="list-container">' + ''.join(rows) + '</div>'
 
 
 # ── Header ──────────────────────────────────────────────────────────────────
@@ -506,10 +528,16 @@ if county_sel != "All Counties":
         )
     ]
 
-# ── Sort ──────────────────────────────────────────────────────────────────────
+# ── Sort (grid view uses dropdown; list view uses clickable header state) ─────
 sort_col, sort_asc = sort_options[sort_sel]
 if sort_col in filtered.columns:
     filtered = filtered.sort_values(by=sort_col, ascending=sort_asc, key=lambda s: s.str.lower())
+
+# Session state for list-view header sorting
+if 'list_sort_col' not in st.session_state:
+    st.session_state.list_sort_col = 'Last Name'
+if 'list_sort_asc' not in st.session_state:
+    st.session_state.list_sort_asc = True
 
 # ── Stats bar + view toggle ───────────────────────────────────────────────────
 stats_col, view_col = st.columns([5, 1])
@@ -531,4 +559,41 @@ elif view_mode == "📊 Grid":
         with cols[i % 3]:
             st.markdown(build_card(row.to_dict()), unsafe_allow_html=True)
 else:
-    st.markdown(build_list_html(filtered), unsafe_allow_html=True)
+    # Apply list-specific sort (driven by clicking column headers)
+    lsc = st.session_state.list_sort_col
+    lsa = st.session_state.list_sort_asc
+    list_filtered = filtered.copy()
+    if lsc in list_filtered.columns:
+        list_filtered = list_filtered.sort_values(
+            by=lsc, ascending=lsa, key=lambda s: s.str.lower()
+        )
+
+    # Sortable header: columns map to (display label, sort column key or None)
+    LIST_HEADERS = [
+        ('Name & Role', 'Last Name'),
+        ('Location',    'Home City'),
+        ('District',    'House District'),
+        ('Occupation',  'Occupation'),
+        ('Contact',     None),
+    ]
+
+    # CSS marker so we can target these buttons with the :has() selector above
+    st.markdown('<div class="list-sort-header"></div>', unsafe_allow_html=True)
+    hcols = st.columns([2, 1, 1.5, 1, 1.6])
+    for col, (label, sort_key) in zip(hcols, LIST_HEADERS):
+        with col:
+            if sort_key:
+                arrow = (' ↑' if lsa else ' ↓') if lsc == sort_key else ''
+                if st.button(f'{label}{arrow}', key=f'lhdr_{sort_key}',
+                             use_container_width=True):
+                    if lsc == sort_key:
+                        st.session_state.list_sort_asc = not lsa
+                    else:
+                        st.session_state.list_sort_col = sort_key
+                        st.session_state.list_sort_asc = True
+                    st.rerun()
+            else:
+                st.button(label, key='lhdr_contact', disabled=True,
+                          use_container_width=True)
+
+    st.markdown(build_list_html(list_filtered), unsafe_allow_html=True)

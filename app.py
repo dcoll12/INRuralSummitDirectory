@@ -78,13 +78,13 @@ st.markdown("""
     }
     .contact-photo {
         width: 72px; height: 72px;
-        border-radius: 50%; object-fit: cover;
+        border-radius: 8px; object-fit: cover;
         border: 3px solid white;
         box-shadow: 0 3px 10px rgba(0,0,0,0.15);
     }
     .photo-placeholder {
         width: 72px; height: 72px;
-        border-radius: 50%;
+        border-radius: 8px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex; align-items: center; justify-content: center;
         font-size: 1.5rem; font-weight: 700; color: white;

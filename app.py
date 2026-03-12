@@ -53,7 +53,7 @@ st.markdown("""
         border: 2px solid white;
     }
 
-    /* Grid card — fixed height so all boxes are the same size */
+    /* Grid card — expands to content; rows equalized via Streamlit column stretch */
     .contact-card {
         background: white;
         border: 2px solid #e2e8f0;
@@ -62,10 +62,30 @@ st.markdown("""
         margin-bottom: 20px;
         border-top: 4px solid #667eea;
         box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        height: 430px;
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        height: 100%;
+    }
+    /* Make Streamlit columns in the same row stretch to equal height */
+    div[data-testid="stHorizontalBlock"] {
+        align-items: stretch !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div[data-testid="column"] > div[data-testid="stVerticalBlock"] {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div[data-testid="column"] > div[data-testid="stVerticalBlock"] > div[data-testid="stMarkdownContainer"] {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div[data-testid="column"] > div[data-testid="stVerticalBlock"] > div[data-testid="stMarkdownContainer"] .contact-card {
+        flex: 1 !important;
     }
     .photo-area {
         display: flex;
@@ -105,8 +125,6 @@ st.markdown("""
         padding: 10px 18px 0;
         border-top: 1px solid #e2e8f0;
         flex: 1;
-        overflow-y: auto;
-        min-height: 0;
     }
     .info-row { margin-bottom: 7px; font-size: 0.88rem; }
     .info-label { font-weight: 600; color: #475569; margin-right: 4px; }

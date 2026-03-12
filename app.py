@@ -1,8 +1,24 @@
+import re
 import streamlit as st
 import pandas as pd
 import requests
 from io import StringIO
 from urllib.parse import urlparse
+
+
+def convert_drive_url(url: str) -> str:
+    """Convert a Google Drive share link to a direct image URL."""
+    if not url:
+        return url
+    # https://drive.google.com/file/d/FILE_ID/view?...
+    m = re.search(r'/file/d/([a-zA-Z0-9_-]+)', url)
+    if m:
+        return f'https://drive.google.com/uc?export=view&id={m.group(1)}'
+    # https://drive.google.com/open?id=FILE_ID  or  ?id=FILE_ID
+    m = re.search(r'[?&]id=([a-zA-Z0-9_-]+)', url)
+    if m:
+        return f'https://drive.google.com/uc?export=view&id={m.group(1)}'
+    return url
 
 st.set_page_config(
     page_title="Indiana Rural Summit Directory",
@@ -214,8 +230,14 @@ def build_card(contact):
     is_candidate = 'candidate' in role.lower()
     is_former = 'former' in role.lower()
 
-    # Photo / avatar
-    photo_url = contact.get('Photo URL', '').strip() or contact.get('Photo', '').strip()
+    # Photo / avatar — check Photo URL, Photo, or first column (portrait link) as fallback
+    first_col_val = str(list(contact.values())[0]).strip() if contact else ''
+    raw_photo = (
+        contact.get('Photo URL', '').strip()
+        or contact.get('Photo', '').strip()
+        or (first_col_val if first_col_val.startswith('http') else '')
+    )
+    photo_url = convert_drive_url(raw_photo)
     initials = ((first[0] if first else '') + (last[0] if last else '')).upper() or '?'
     if photo_url:
         photo_html = (

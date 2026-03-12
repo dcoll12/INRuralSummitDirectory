@@ -781,12 +781,12 @@
             // https://drive.google.com/file/d/FILE_ID/view?...
             const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
             if (fileMatch) {
-                return `https://drive.google.com/uc?export=view&id=${fileMatch[1]}`;
+                return `https://drive.google.com/thumbnail?id=${fileMatch[1]}&sz=w400`;
             }
             // https://drive.google.com/open?id=FILE_ID  or  ?id=FILE_ID
             const openMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
             if (openMatch) {
-                return `https://drive.google.com/uc?export=view&id=${openMatch[1]}`;
+                return `https://drive.google.com/thumbnail?id=${openMatch[1]}&sz=w400`;
             }
             return url;
         }

@@ -13,11 +13,11 @@ def convert_drive_url(url: str) -> str:
     # https://drive.google.com/file/d/FILE_ID/view?...
     m = re.search(r'/file/d/([a-zA-Z0-9_-]+)', url)
     if m:
-        return f'https://drive.google.com/uc?export=view&id={m.group(1)}'
+        return f'https://drive.google.com/thumbnail?id={m.group(1)}&sz=w400'
     # https://drive.google.com/open?id=FILE_ID  or  ?id=FILE_ID
     m = re.search(r'[?&]id=([a-zA-Z0-9_-]+)', url)
     if m:
-        return f'https://drive.google.com/uc?export=view&id={m.group(1)}'
+        return f'https://drive.google.com/thumbnail?id={m.group(1)}&sz=w400'
     return url
 
 st.set_page_config(

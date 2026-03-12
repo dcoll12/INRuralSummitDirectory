@@ -242,7 +242,8 @@ def build_card(contact):
     if photo_url:
         photo_html = (
             f'<img class="contact-photo" src="{photo_url}" alt="{name}" '
-            f'onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'
+            f'onerror="this.onerror=null;this.style.display=\'none\';var n=this.nextElementSibling;if(n)n.style.display=\'flex\';" '
+            f'onload="if(!this.naturalWidth||!this.naturalHeight){{this.style.display=\'none\';var n=this.nextElementSibling;if(n)n.style.display=\'flex\';}}">'
             f'<div class="photo-placeholder" style="display:none">{initials}</div>'
         )
     else:

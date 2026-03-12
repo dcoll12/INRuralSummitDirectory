@@ -450,7 +450,7 @@ if 'Counties' in df.columns:
 # ── Search & Filter controls ─────────────────────────────────────────────────
 search = st.text_input("🔍 Search by name, location, occupation, or opponent...", "")
 
-fc1, fc2, fc3, fc4 = st.columns([3, 2, 2, 1])
+fc1, fc2, fc3, fc4, fc5 = st.columns([3, 2, 2, 2, 1])
 with fc1:
     role_sel = st.selectbox("Role", ["All Roles"] + sorted(all_roles), label_visibility="collapsed")
 with fc2:
@@ -458,6 +458,16 @@ with fc2:
 with fc3:
     county_sel = st.selectbox("County", ["All Counties"] + sorted(all_counties), label_visibility="collapsed")
 with fc4:
+    sort_options = {
+        "Last Name (A–Z)": ("Last Name", True),
+        "Last Name (Z–A)": ("Last Name", False),
+        "First Name (A–Z)": ("First Name", True),
+        "First Name (Z–A)": ("First Name", False),
+        "Role (A–Z)": ("Role", True),
+        "Location (A–Z)": ("Home City", True),
+    }
+    sort_sel = st.selectbox("Sort", list(sort_options.keys()), label_visibility="collapsed")
+with fc5:
     reset = st.button("Reset", use_container_width=True)
 
 if reset:
@@ -495,6 +505,11 @@ if county_sel != "All Counties":
             lambda x: county_sel in [c.strip() for c in str(x).split(',')]
         )
     ]
+
+# ── Sort ──────────────────────────────────────────────────────────────────────
+sort_col, sort_asc = sort_options[sort_sel]
+if sort_col in filtered.columns:
+    filtered = filtered.sort_values(by=sort_col, ascending=sort_asc, key=lambda s: s.str.lower())
 
 # ── Stats bar + view toggle ───────────────────────────────────────────────────
 stats_col, view_col = st.columns([5, 1])

@@ -773,6 +773,23 @@
         
         let directoryData = [];
         let filteredData = [];
+        let directoryHeaders = [];
+
+        // Convert a Google Drive share link to a direct image URL
+        function convertDriveUrl(url) {
+            if (!url) return '';
+            // https://drive.google.com/file/d/FILE_ID/view?...
+            const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (fileMatch) {
+                return `https://drive.google.com/uc?export=view&id=${fileMatch[1]}`;
+            }
+            // https://drive.google.com/open?id=FILE_ID  or  ?id=FILE_ID
+            const openMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (openMatch) {
+                return `https://drive.google.com/uc?export=view&id=${openMatch[1]}`;
+            }
+            return url;
+        }
 
         // Show loading indicator
         function showLoading() {
@@ -851,6 +868,7 @@
             
             // Parse header row
             const headers = parseCSVLine(lines[0]);
+            directoryHeaders = headers;
             console.log('Headers found:', headers.length, headers);
             
             // Parse data rows
@@ -1023,7 +1041,10 @@
             if (contact['Congressional District']) districtInfo.push(contact['Congressional District']);
 
             // Build photo/avatar HTML
-            const photoUrl = contact['Photo URL'] || contact['Photo'] || '';
+            // Check Photo URL, Photo, or the first column (portrait link) as fallback
+            const firstColVal = directoryHeaders.length > 0 ? (contact[directoryHeaders[0]] || '') : '';
+            const rawPhotoUrl = contact['Photo URL'] || contact['Photo'] || (firstColVal.startsWith('http') ? firstColVal : '');
+            const photoUrl = convertDriveUrl(rawPhotoUrl);
             const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
             const photoHtml = photoUrl
                 ? `<img class="contact-photo" src="${photoUrl}" alt="${firstName} ${lastName}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">

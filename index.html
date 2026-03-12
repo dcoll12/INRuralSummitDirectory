@@ -781,12 +781,12 @@
             // https://drive.google.com/file/d/FILE_ID/view?...
             const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
             if (fileMatch) {
-                return `https://lh3.googleusercontent.com/d/${fileMatch[1]}`;
+                return `https://drive.usercontent.google.com/download?id=${fileMatch[1]}&export=view&authuser=0`;
             }
             // https://drive.google.com/open?id=FILE_ID  or  ?id=FILE_ID
             const openMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
             if (openMatch) {
-                return `https://lh3.googleusercontent.com/d/${openMatch[1]}`;
+                return `https://drive.usercontent.google.com/download?id=${openMatch[1]}&export=view&authuser=0`;
             }
             return url;
         }
@@ -1047,7 +1047,9 @@
             const photoUrl = convertDriveUrl(rawPhotoUrl);
             const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
             const photoHtml = photoUrl
-                ? `<img class="contact-photo" src="${photoUrl}" alt="${firstName} ${lastName}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                ? `<img class="contact-photo" src="${photoUrl}" alt="${firstName} ${lastName}"
+                       onerror="this.onerror=null;this.style.display='none';var n=this.nextElementSibling;if(n)n.style.display='flex';"
+                       onload="if(!this.naturalWidth||!this.naturalHeight){this.style.display='none';var n=this.nextElementSibling;if(n)n.style.display='flex';}">
                    <div class="contact-photo-placeholder" style="display:none;">${initials}</div>`
                 : `<div class="contact-photo-placeholder">${initials}</div>`;
 
